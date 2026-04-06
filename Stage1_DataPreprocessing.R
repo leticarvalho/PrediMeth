@@ -19,8 +19,8 @@
 
 # OUTPUT -------------------------------------------------
 # 	Data frame of phenotype (rows: samples, columns: variables)
-# 	Matrix of beta values (rows: probe IDs, columns: samples)
-#	  Matrix of M-values (rows: probe IDs, columns: samples)
+# 	Matrix of beta values (rows: probe IDs/names, columns: samples)
+#	  Matrix of M-values (rows: probe IDs/names, columns: samples)
 
 
 ##########################################################
@@ -38,8 +38,11 @@ library(DMRcate)
 
 ## Define label ------------------------------------------
 
-label <- "_rmCH_XY_CNP" 
-#label <- "_rmXY" 
+#label <- "_rmCH_XY_SNP" 
+#~ label <- "_rmXY" 
+
+label <- "_rmCH_XY_SNP_clamp"  # probe IDs
+#~ label <- "_rmXY_clamp" # probe names 
 
 cat("Starting script Stage1_DataPreprocessing with label ", label, " \n")
 message("Starting script Stage1_DataPreprocessing with label ", label, " : ", Sys.time() )
@@ -163,15 +166,19 @@ IJC_norm.beta[IJC_norm.beta == 0] <- 1e-6
 IJC_norm.beta[IJC_norm.beta == 1] <- 1 - 1e-6
 
 ## Changing names of probes (rownames), from probe names to probe IDs (EPIC v2)
+#~ cat("	Keeping names of probes as Probe_name. \n")
 cat("	Changing names of probes to ProbeIDs. \n")
 id_map <- setNames(EPIC_MEsteller$ProbeID, EPIC_MEsteller$Probe_name)
-rownames(IJC_norm.beta) <- id_map[rownames(IJC_norm.beta)]
+new_names <- id_map[rownames(IJC_norm.beta)]
+rownames(IJC_norm.beta) <- ifelse(is.na(new_names),
+                                 rownames(IJC_norm.beta),
+                                 new_names)
 
-## Filtering probes with DMRcate - removes SNP-related probes and cross-hybridising probes
+#~ ## Filtering probes with DMRcate - removes SNP-related probes and cross-hybridising probes
 cat("Filtering probes with DMRcate. \n")
 message("Filtering probes with DMRcate : ", Sys.time())
-setExperimentHubOption("CACHE", "/home/labs/dnalab/studentdnabank/ExperimentHub")
 hub <- ExperimentHub()
+setExperimentHubOption("CACHE", "/home/labs/dnalab/studentdnabank/ExperimentHub")
 IJC_norm.beta <- rmSNPandCH(IJC_norm.beta, 
 							dist = 2, # maximum distance (from CpG to SNP/variant) of probes to be filtered out
 							mafcut = 0.05, # minimum minor allele frequency of probes to be filtered out
@@ -180,17 +187,37 @@ IJC_norm.beta <- rmSNPandCH(IJC_norm.beta,
 							rmXY=FALSE) # filter sex probes
 cat("Bvalues dimensions after SNP and CH related probes filtering: ", dim(IJC_norm.beta), "\n")
 
-## Removing chrX or chrY associated probes from dataset (according to EPICv2 annotation)
+## Removing chrX or chrY associated probes from dataset (according to EPICv2 annotation)  ----------> CHANGE WHETHER IS PROBE NAME OR ID
 IJC_norm.beta <- IJC_norm.beta[!(rownames(IJC_norm.beta) %in% probes_Y$ProbeID),] 
 cat("Bvalues dimensions after chrY related probes filtering: ", dim(IJC_norm.beta), "\n")
 IJC_norm.beta <- IJC_norm.beta[!(rownames(IJC_norm.beta) %in% probes_X$ProbeID),] 
 cat("Bvalues dimensions after chrX related probes filtering: ", dim(IJC_norm.beta), "\n")
+#~ IJC_norm.beta <- IJC_norm.beta[!(rownames(IJC_norm.beta) %in% probes_Y$Probe_name),] 
+#~ cat("Bvalues dimensions after chrY related probes filtering: ", dim(IJC_norm.beta), "\n")
+#~ IJC_norm.beta <- IJC_norm.beta[!(rownames(IJC_norm.beta) %in% probes_X$Probe_name),] 
+#~ cat("Bvalues dimensions after chrX related probes filtering: ", dim(IJC_norm.beta), "\n")
 
 ## Convert beta values to M-values
-IJC_m_values <- lumi::beta2m(IJC_norm.beta)
+IJC_m_values <- minfi::logit2(IJC_norm.beta)
 cat("Beta values converted to M-values. Dimensions: ", 
     "\nBvalues = ", dim(IJC_norm.beta), 
     "\nMvalues = ", dim(IJC_m_values), "\n")
+    
+## Analyse infinitive values (produced by Beta-Values = 0 or 1) 
+inf_values <- !is.finite(IJC_m_values)
+# per CpG
+inf_per_cpg <- rowSums(!is.finite(IJC_m_values))
+table(inf_per_cpg)
+# per sample
+inf_per_sample <- colSums(!is.finite(IJC_m_values))
+table(inf_per_sample)
+cat("Infinite Mvalues: ", sum(inf_values), "\nPer CpG: ", table(inf_per_cpg), 
+     "\nPer sample: ", table(inf_per_sample)) # 
+     
+## Checking rownames 
+cat("Checking methylation matrixes rownames: \n")
+IJC_norm.beta[1:5, 1:5]
+IJC_m_values[1:5, 1:5]
 
 ##########################################################
 
@@ -206,6 +233,7 @@ PrediMeth_all_merge <- PrediMeth_all_merge[keep_samples,]
 
 ## Remove missing values from patients data (covariables)
 PrediMeth_all_merge <- PrediMeth_all_merge[!PrediMeth_all_merge$predimed_high == "NULL", ] # predimeth_high
+PrediMeth_all_merge <- PrediMeth_all_merge[!PrediMeth_all_merge$predimed_cat == "NULL", ] # predimeth_cat
 PrediMeth_all_merge <- PrediMeth_all_merge[!PrediMeth_all_merge$EDAD_ANOS == "NULL", ] # age
 PrediMeth_all_merge <- PrediMeth_all_merge[!PrediMeth_all_merge$SEXO == "NULL", ] # sex
 PrediMeth_all_merge <- PrediMeth_all_merge[!PrediMeth_all_merge$BMI == "NULL", ] # BMI
@@ -215,24 +243,8 @@ cat("Pheno data dimensions after removing missing values from covariables: ", di
 ## Setting rownames
 rownames(PrediMeth_all_merge) <- PrediMeth_all_merge$sample_id
 
-## Preparing variables of interest
-
-# High adherence to Mediterranean diet (binary)
-PrediMeth_all_merge$predimed_high <- factor(PrediMeth_all_merge$predimed_high, 
-                                            levels = c(0, 1), 
-                                            labels = c("no", "yes"))
-# Age
-PrediMeth_all_merge$age <- as.numeric(PrediMeth_all_merge$EDAD_ANOS)
-# Sex
-PrediMeth_all_merge$sex <- factor(PrediMeth_all_merge$SEXO, 
-                                  levels = c(1,2), 
-                                  labels = c("men", "women"))
-# BMI
-PrediMeth_all_merge$bmi <- as.numeric(PrediMeth_all_merge$BMI)
-# Smoking habit
-PrediMeth_all_merge$smoking_habit <- factor(PrediMeth_all_merge$smoking_habit, 
-                                            levels = c(1,2,3), 
-                                            labels = c("smoker","exsmoker", "nonsmoker"))
+## Structure of variables
+str(PrediMeth_all_merge)
 
 ##########################################################
 
@@ -262,9 +274,9 @@ message("Meth data updated. Saving outputs: ", Sys.time())
 #### SAVING OUTPUTS ####
 
 save(PrediMeth_all_merge, IJC_m_values, IJC_norm.beta, file = file.path(results_folder, paste0("processed_data", label, ".R")))
-write.table(IJC_m_values, file = file.path(results_folder, paste0("IJC_m_values", label, ".txt")), sep = "\t", col.names = TRUE, row.names = TRUE)
-write.table(IJC_norm.beta, file = file.path(results_folder, paste0("IJC_norm.beta", label, ".txt")), sep = "\t", col.names = TRUE, row.names = TRUE)
-write.table(PrediMeth_all_merge, file = file.path(results_folder, paste0("PrediMeth_all_merge", label, ".txt")), col.names = TRUE, row.names = FALSE)
+#write.table(IJC_m_values, file = file.path(results_folder, paste0("IJC_m_values", label, ".txt")), sep = "\t", col.names = TRUE, row.names = TRUE)
+#write.table(IJC_norm.beta, file = file.path(results_folder, paste0("IJC_norm.beta", label, ".txt")), sep = "\t", col.names = TRUE, row.names = TRUE)
+#write.table(PrediMeth_all_merge, file = file.path(results_folder, paste0("PrediMeth_all_merge", label, ".txt")), col.names = TRUE, row.names = FALSE)
 
 cat("Script completed. \n")
 message("Script completed: ", Sys.time())
