@@ -19,8 +19,8 @@
 
 # OUTPUT -------------------------------------------------
 # 	Data frame of phenotype (rows: samples, columns: variables)
-# 	Matrix of beta values (rows: probe IDs/names, columns: samples)
-#	  Matrix of M-values (rows: probe IDs/names, columns: samples)
+# 	Matrix of beta values (rows: probe IDs, columns: samples)
+#	  Matrix of M-values (rows: probe IDs, columns: samples)
 
 
 ##########################################################
@@ -36,31 +36,24 @@ library(DMRcate)
 
 #### RESOLVE PATHS ####
 
-## Define label ------------------------------------------
-
-#label <- "_rmCH_XY_SNP" 
-#~ label <- "_rmXY" 
-
-label <- "_rmCH_XY_SNP_clamp"  # probe IDs
-#~ label <- "_rmXY_clamp" # probe names 
-
-cat("Starting script Stage1_DataPreprocessing with label ", label, " \n")
-message("Starting script Stage1_DataPreprocessing with label ", label, " : ", Sys.time() )
+cat("Starting script Stage1_DataPreprocessing \n")
+message("Starting script Stage1_DataPreprocessing : ", Sys.time() )
 
 ## Input paths -------------------------------------------
 
 # Data 
-data_path <- "/imppc/labs/dnalab/studentdnabank/Data/"
-methylation_dir <- file.path(data_path, 'omics', 'methylation', 'ijc')
-questionary_dir <- file.path(data_path, 'questionnaire')
+methylation_path <- "/path_to_beta_values.R" # R object with beta values 
+questionary_dir <- "/path_to_directory_with_phenotype_information/" # path to pheno directory 
+annotation_path <- "/path_to_EPICv2_annotation.R" # R object with EPICv2 annotation
+cellcounts_path <- "/path_to_cell_counts.csv" # csv with cell counts
 
 # Project (PrediMeth)
-predimeth_path <- "/imppc/labs/dnalab/share/PrediMeth"
+predimeth_path <- "/path_to_project_folder/"
 results_dir <- file.path(predimeth_path, "results")
 
 ## Output paths ------------------------------------------
 
-results_folder <- file.path(results_dir, paste0('ProcessedData_Stage1', label))
+results_folder <- file.path(results_dir, 'ProcessedData_Stage1')
 dir.create(results_folder)
 
 ##########################################################
@@ -80,16 +73,16 @@ measures_1 <- fread(file.path(questionary_dir, "mesures_nivell1.csv"))
 ## Methylation data ---------------------------------------
 
 # Beta values (already normalized)
-load("/imppc/labs/dnalab/studentdnabank/Data/omics/methylation/ijc/4.norm_pc_10_IJC_beta.Robj") 
+load(methylation_path) 
 
 # Annotation (EPIC v2)
-load("/imppc/labs/dnalab/share/PrediMeth/0-data/EPICv2.annot.RData")
+load(annotation_path)
 EPIC_MEsteller$Probe_name  <- stringr::str_remove(EPIC_MEsteller$ProbeID, "_.*")
 probes_Y <- subset(EPIC_MEsteller, CpGchrm=="chrY") # probes from chrY
 probes_X <- subset(EPIC_MEsteller, CpGchrm=="chrX") # probes from chrX
 
 # Blood cell counts (to after adjustment as covariates)
-cell_counts <- data.table::fread("/imppc/labs/dnalab/studentdnabank/Data/omics/methylation/ijc/cell_and_clocks/cell_counts.csv")
+cell_counts <- data.table::fread(cellcounts_path)
 cell_counts$sample_id <- cell_counts$V1
 cell_counts$V1 <- NULL
 
@@ -109,23 +102,16 @@ consulta_merge <- consulta_merge[consulta_merge$sample_year=="baseline",]
 
 ## Select variables from other tables
 consulta_merge <- subset(consulta_merge, 
-                         select = c("entity_id", "SAMPLE_ID (xIJC)", "COUNTRY_BIRTH.y", 
-                                    "METABOLOMED", "METABOLOMED_SAMPLE", "IA4T2D", "COMORBIDITY")) 
+                         select = c("entity_id", "SAMPLE_ID (xIJC)")) 
 consulta_merge$sample_id <- consulta_merge$`SAMPLE_ID (xIJC)`
 consulta_merge$`SAMPLE_ID (xIJC)` <- NULL
 
 questionary_1_subset <- subset(questionary_1, 
                                select = c("entity_id", "EDAD_ANOS", "SEXO", 
-                                          "smoking_habit", "predimed_score", "predimed_cat", "predimed_high",
-                                          "sedentarisme", "mets_semana", "RURAL", 
-                                          "REGION_RESIDENCE", "REGION_BIRTH", 
-                                          "MUNICIPIO_RESIDENCIA", "MUNICIPIO_NACIMIENTO",
-                                          "LABORAL_ESTADO", "SANIDAD", "INGRESOS", 
-                                          "ESTUDIOS", "ESTADO_CIVIL", "ETNIA_PARTICIPANTE"))
+                                          "smoking_habit", "predimed_score", 
+                                          "predimed_cat", "predimed_high"))
 
-measures_subset <- subset(measures_1, select = c("entity_id", "BMI", "CALC_AVG_PESO", 
-                                               "CALC_AVG_HEIGHT", "CALC_AVG_CINTURA", 
-                                               "CALC_AVG_CADERA", "WHR"))
+measures_subset <- subset(measures_1, select = c("entity_id", "BMI"))
 
 ## Information about patients (1 row per patient) - merged data
 PrediMeth_all_merge <- merge(questionary_1_subset, measures_subset, by = "entity_id") 
@@ -166,7 +152,6 @@ IJC_norm.beta[IJC_norm.beta == 0] <- 1e-6
 IJC_norm.beta[IJC_norm.beta == 1] <- 1 - 1e-6
 
 ## Changing names of probes (rownames), from probe names to probe IDs (EPIC v2)
-#~ cat("	Keeping names of probes as Probe_name. \n")
 cat("	Changing names of probes to ProbeIDs. \n")
 id_map <- setNames(EPIC_MEsteller$ProbeID, EPIC_MEsteller$Probe_name)
 new_names <- id_map[rownames(IJC_norm.beta)]
@@ -178,7 +163,7 @@ rownames(IJC_norm.beta) <- ifelse(is.na(new_names),
 cat("Filtering probes with DMRcate. \n")
 message("Filtering probes with DMRcate : ", Sys.time())
 hub <- ExperimentHub()
-setExperimentHubOption("CACHE", "/home/labs/dnalab/studentdnabank/ExperimentHub")
+setExperimentHubOption("CACHE", "/path")
 IJC_norm.beta <- rmSNPandCH(IJC_norm.beta, 
 							dist = 2, # maximum distance (from CpG to SNP/variant) of probes to be filtered out
 							mafcut = 0.05, # minimum minor allele frequency of probes to be filtered out
@@ -192,10 +177,6 @@ IJC_norm.beta <- IJC_norm.beta[!(rownames(IJC_norm.beta) %in% probes_Y$ProbeID),
 cat("Bvalues dimensions after chrY related probes filtering: ", dim(IJC_norm.beta), "\n")
 IJC_norm.beta <- IJC_norm.beta[!(rownames(IJC_norm.beta) %in% probes_X$ProbeID),] 
 cat("Bvalues dimensions after chrX related probes filtering: ", dim(IJC_norm.beta), "\n")
-#~ IJC_norm.beta <- IJC_norm.beta[!(rownames(IJC_norm.beta) %in% probes_Y$Probe_name),] 
-#~ cat("Bvalues dimensions after chrY related probes filtering: ", dim(IJC_norm.beta), "\n")
-#~ IJC_norm.beta <- IJC_norm.beta[!(rownames(IJC_norm.beta) %in% probes_X$Probe_name),] 
-#~ cat("Bvalues dimensions after chrX related probes filtering: ", dim(IJC_norm.beta), "\n")
 
 ## Convert beta values to M-values
 IJC_m_values <- minfi::logit2(IJC_norm.beta)
@@ -273,10 +254,7 @@ message("Meth data updated. Saving outputs: ", Sys.time())
 
 #### SAVING OUTPUTS ####
 
-save(PrediMeth_all_merge, IJC_m_values, IJC_norm.beta, file = file.path(results_folder, paste0("processed_data", label, ".R")))
-#write.table(IJC_m_values, file = file.path(results_folder, paste0("IJC_m_values", label, ".txt")), sep = "\t", col.names = TRUE, row.names = TRUE)
-#write.table(IJC_norm.beta, file = file.path(results_folder, paste0("IJC_norm.beta", label, ".txt")), sep = "\t", col.names = TRUE, row.names = TRUE)
-#write.table(PrediMeth_all_merge, file = file.path(results_folder, paste0("PrediMeth_all_merge", label, ".txt")), col.names = TRUE, row.names = FALSE)
+save(PrediMeth_all_merge, IJC_m_values, IJC_norm.beta, file = file.path(results_folder, "processed_data.R"))
 
 cat("Script completed. \n")
 message("Script completed: ", Sys.time())
