@@ -5,22 +5,64 @@ Git repository with scripts used to develop this project.
 
 ## 1. Data preprocessing (Test cohort): *Stage1_DataPreprocessing.R*
 
-### DESCRIPTION
+### Description
 In this script, the data from the discovery cohort is processed and prepared for the future EWAS. It involves phenotype and methylation data. The data from discovery cohort comes from IJC. 
 
-### INPUT
+### Input
 * Phenotype data (diet adherence + covariables)
 * Methylation data (beta values matrix already normalized)
 * Annotation from EPIC version 2
 * Blood cells counts
 
-### OUTPUT 
+### Output 
 * Data frame of phenotype (rows: samples, columns: variables)
 * Matrix of beta values (rows: probe IDs, columns: samples)
 * Matrix of M-values (rows: probe IDs, columns: samples)
 
-2. EWAS of Mediterranean diet: *Stage1_FittingModel.R*
+## 2. EWAS of Mediterranean diet: *Stage1_FittingModel.R*
 
-3. Results visualization: *Stage1_VisualizingEWASResults.R*
+### Description
+In this script, the processed data is used to fit the best linear model (selected after sensitivity analyses) to each CpG, using limma R package. For this model, a topTable will be generated, including EPIC v2 annotation and calculated absolute delta beta (ADB). 
+**Selected model**: Mvalues ~ diet + age + sex + smoking + BMI + cell counts
+*Obs. diet may be binary (predimed_high) or multifactor (predimed_cat); some lines are commented depending on this.*
 
-4. Annotation of top hits: *Stage1_AnnotatingEWASTopHits.R*
+### Input 
+* Data frame of phenotype (rows: samples, columns: variables)
+* Matrix of beta values (rows: probe IDs, columns: samples)
+* Matrix of M-values (rows: probe IDs, columns: samples)
+
+### Output
+* Results table (topTable + annotation + ADB)
+* Bonferroni's threshold
+
+## 3. Results visualization: *Stage1_VisualizingEWASResults.R*
+
+### Description
+In this script, EWAS results are visualized by plots, regarding different aspects. R packages like *ggplot2*, *qqman* and *EnhancedVolcano* will be used. 
+
+### Input 
+* EWAS results (topTable)
+
+### Output 
+* FDR-significant topTable subset
+* CpGs in vectors (to use in enrichment)
+* Volcano Plot
+* Manhattan Plot
+* QQplot (genomic inflation analysis)
+* Genomic Categories Bar Plot
+
+## 4. Annotation of top hits: *Stage1_AnnotatingEWASTopHits.R*
+
+### Description
+In this script, EWAS results will be annotated using missMethyl functions, to account for multi-probe bias, using some annotation databases: Gene Ontology (GO), Kyoto Encyclopedia of Genes and Genomes (KEGG), Reactome, and alternative gene sets. If not FDR-significant, results will be ranked by raw p-value, and showed by a dotplot or a barchart. 
+
+### Input 
+* EWAS results (CpG vectors)
+
+### Output
+* Gene Ontology (GO)
+* Kyoto Encyclopedia of Genes and Genomes (KEGG)
+* Reactome
+* Alternative gene sets: MSigDB Hallmark, ImmuneSigDB, Wikipathways
+
+
