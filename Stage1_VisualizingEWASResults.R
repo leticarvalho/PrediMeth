@@ -11,7 +11,7 @@
 # qqman and EnhancedVolcano will be used. 
 
 # INPUT --------------------------------------------------
-# 	EWAS results (topTable): 
+# 	EWAS results (topTable) 
 
 # OUTPUT -------------------------------------------------
 # 	FDR-significant topTable subset
