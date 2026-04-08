@@ -11,7 +11,7 @@
 # qqman and EnhancedVolcano will be used. 
 
 # INPUT --------------------------------------------------
-# 	EWAS results (topTable)
+# 	EWAS results (topTable): 
 
 # OUTPUT -------------------------------------------------
 # 	FDR-significant topTable subset
@@ -42,11 +42,17 @@ label <- "_3cat" # Probe ID
 
 ## Input paths -------------------------------------------
 
+# Project (PrediMeth)
 predimeth_path <- "/path_to_project_folder/" # path to project folder
 results_dir <- file.path(predimeth_path, "results") # path to results folder
 
-limma_results <- file.path(results_dir, "LimmaResults_Stage1/limma_results_3cat.R")
-#limma_results <- file.path(results_dir, "LimmaResults_Stage1/limma_results_bin.R")
+# Data 
+
+limma_results <- file.path(results_dir, "LimmaResults_Stage1/limma_results_3cat.R") 
+# contains: High_vs_Low_topTable, Medium_vs_Low_topTable, High_vs_Medium_topTable, bonf_threshold
+
+#~ limma_results <- file.path(results_dir, "LimmaResults_Stage1/limma_results_bin.R")
+# contains: full_topTable, bonf_threshold
 
 ## Output paths ------------------------------------------
 

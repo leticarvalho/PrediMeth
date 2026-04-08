@@ -111,6 +111,7 @@ gometh_go_biasplot <- gometh(sig.cpg = fdr_HL_ids, all.cpg = all_probes_ids, col
                              array.type = "EPIC_V2", sig.genes = TRUE, 
                              anno = ann.hg38, plot.bias = TRUE)
 
+ggsave(file.path(results_folder, "GO_biasplot.pdf"), plot = gometh_go_biasplot, width = 8, height = 7)
 
 # Only Promoter #
 
@@ -177,6 +178,8 @@ barplot(er_kegg, showCategory = 20, x = "GeneRatio", font.size = 10) + theme_min
 gometh_kegg_biasplot <- gometh(sig.cpg = fdr_HL_ids, all.cpg = all_probes_ids, collection = "KEGG",
                              array.type = "EPIC_V2", sig.genes = TRUE, 
                              anno = ann.hg38, plot.bias = TRUE)
+
+ggsave(file.path(results_folder, "KEGG_biasplot.pdf"), plot = gometh_kegg_biasplot, width = 8, height = 7)
 
 # Only Promoter # 
 
@@ -302,6 +305,21 @@ gsa_wikipathways <- gsameth(sig.cpg = fdr_HL_ids, all.cpg = all_probes_ids,
   tibble::rownames_to_column("GeneSet") %>%
   mutate(FDR = p.adjust(P.DE, method = "BH")) %>%
   arrange(P.DE)
+
+##########################################################
+
+#### SAVING OUTPUTS ####
+
+## R object
+
+save(v2.gometh_GO, v2.gometh_GO_promoter, v2.gometh_GO_body, v2.gometh_GO_hypo, v2.gometh_GO_hyper,
+     file = file.path(results_folder, paste0("enrich_GO", label, ".R")))
+
+save(v2.gometh_KEGG, v2.gometh_KEGG_promoter, v2.gometh_KEGG_body, v2.gometh_KEGG_hypo, v2.gometh_KEGG_hyper,
+     file = file.path(results_folder, paste0("enrich_KEGG", label, ".R")))
+
+save(gsa_hallmarks, gsa_reactome_all, gsa_immunesig, gsa_wikipathways,
+     file = file.path(results_folder, paste0("enrich_others", label, ".R")))
 
 ##########################################################
 

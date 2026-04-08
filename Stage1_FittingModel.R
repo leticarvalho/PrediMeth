@@ -12,7 +12,8 @@
 # topTable will be generated, including EPIC v2 annotation 
 # and calculated absolute delta beta (ADB). 
 # Selected model: Mvalues ~ diet + age + sex + smoking + BMI + cell counts
-# Obs. diet may be binary (predimed_high) or multifactor (predimed_cat).
+# Obs. diet may be binary (predimed_high) or multifactor (predimed_cat); 
+#      some lines are commented depending on this.
 
 # INPUT --------------------------------------------------
 # 	Data frame of phenotype (rows: samples, columns: variables)
@@ -40,17 +41,19 @@ library(qqman)
 ## Define label ------------------------------------------
 
 # Selected model: 
-# βCpG ∼ High adherence to Med diet + Age + Sex + BMI + Smoking + Cell counts + SVs (full model) 
+# βCpG ∼ High adherence to Med diet + Age + Sex + BMI + Smoking + Cell counts (full model) 
 
 label <- "_3cat" # Probe ID
 #label <- "_bin" # Probe ID
 
 ## Input paths -------------------------------------------
 
-annotation_path <- "/path_to_EPICv2_annotation.R" # R object with EPICv2 annotation
-
+# Project (PrediMeth)
 predimeth_path <- "/path_to_project_folder/" # path to project folder
 results_dir <- file.path(predimeth_path, "results") # path to results folder
+
+# Data 
+annotation_path <- "/path_to_EPICv2_annotation.R" # R object with EPICv2 annotation
 processed_data <- file.path(results_dir, "ProcessedData_Stage1/processed_data.R")
 
 ## Output paths ------------------------------------------
@@ -64,26 +67,23 @@ dir.create(results_folder)
 
 ## Preprocessed data (Stage 1) ---------------------------
 
-load(processed_data)
+load(processed_data) # contains: pheno, Mvalues, Betavalues
 
-## Renaming objects
-Mvalues <- IJC_m_values 
-Betavalues <- IJC_norm.beta 
-pheno <- PrediMeth_all_merge
+## Renaming pheno rows
 rownames(pheno) <- pheno$sample_id 
 
 ## Looking at dimensions
 print("Dimensions of loaded data:")
-dim(IJC_norm.beta)
-dim(IJC_m_values)
-dim(PrediMeth_all_merge)
+dim(Betavalues)
+dim(Mvalues)
+dim(pheno)
 
 ## Annotation (EPIC v2) ----------------------------------
 
 load(annotation_path)
-EPIC_MEsteller$Probe_name <- stringr::str_remove(EPIC_MEsteller$ProbeID, "_.*") 
+EPICv2_annotation$Probe_name <- stringr::str_remove(EPICv2_annotation$ProbeID, "_.*") 
 print("Preparing annotation to add to topTable: \n")
-EPIC_sub <- EPIC_MEsteller[match(rownames(Mvalues), EPIC_MEsteller$ProbeID),] # when rows = probe IDs
+EPIC_sub <- EPICv2_annotation[match(rownames(Mvalues), EPICv2_annotation$ProbeID),] # rows = probe IDs
 
 ##########################################################
 
@@ -95,11 +95,11 @@ message("Data loaded. \n\nStarting model design: ", Sys.time())
 ## Preparing variables
 
 #~ predimed_type <- factor(pheno$predimed_high, levels = c(0, 1), labels = c("no", "yes"))
-predimed_categ <- factor(pheno$predimed_cat, levels = c(1,2,3), labels = c("low", "medium", "high")) # "1=low [0-5), 2=medium [5-9), 3=high" [9-Inf
+predimed_categ <- factor(pheno$predimed_cat, levels = c(1,2,3), labels = c("low", "medium", "high")) 
 
-age <- as.numeric(pheno$EDAD_ANOS)
-sex <- factor(pheno$SEXO, levels = c(1,2), labels = c("men", "women"))
-bmi <- as.numeric(pheno$BMI)
+age <- as.numeric(pheno$age)
+sex <- factor(pheno$sex, levels = c(1,2), labels = c("men", "women"))
+bmi <- as.numeric(pheno$bmi)
 smoking_type <- factor(pheno$smoking_habit, levels = c(1,2,3), labels = c("smoker","exsmoker", "nonsmoker"))
 
 ## Creating the design matrix -----------------------------
@@ -110,23 +110,22 @@ smoking_type <- factor(pheno$smoking_habit, levels = c(1,2,3), labels = c("smoke
 #~ colnames(design_matrix)
 # --------------
 design_matrix <- model.matrix(~0 + predimed_categ + age + sex + bmi + smoking_type + Bcell + CD4T + CD8T + Mono + Neu + NK, data = pheno) 
-
 cat("\n Head of design matrix: \n")
 head(design_matrix)
 colnames(design_matrix)
 
 # Checking groups dimensions ---------------------------
 
-#~ list_yes <- rownames(subset(PrediMeth_all_merge, predimed_type=="yes")) # yes
+#~ list_yes <- rownames(subset(pheno, predimed_type=="yes")) # yes
 #~ cat("	Amount of high adherents to Med diet: ", length(list_yes), "\n")
-#~ list_no <- rownames(subset(PrediMeth_all_merge, predimed_type=="no")) # no
+#~ list_no <- rownames(subset(pheno, predimed_type=="no")) # no
 #~ cat("	Amount of low adherents to Med diet: ", length(list_no), "\n")
 # --------------
-list_high <- rownames(subset(PrediMeth_all_merge, predimed_categ=="high")) # yes
+list_high <- rownames(subset(pheno, predimed_categ=="high")) # yes
 cat("	Amount of high adherents to Med diet: ", length(list_high), "\n")
-list_medium <- rownames(subset(PrediMeth_all_merge, predimed_categ=="medium")) # no
+list_medium <- rownames(subset(pheno, predimed_categ=="medium")) # no
 cat("	Amount of medium adherents to Med diet: ", length(list_medium), "\n")
-list_low <- rownames(subset(PrediMeth_all_merge, predimed_categ=="low")) # no
+list_low <- rownames(subset(pheno, predimed_categ=="low")) # no
 cat("	Amount of low adherents to Med diet: ", length(list_low), "\n")
 
 ## Creating the contrast matrix ---------------------------
@@ -252,9 +251,9 @@ message("Results analysis completed. \n\nSaving outputs: ", Sys.time())
 #~      file = file.path(results_folder, paste0("limma_results", label, ".R")))
      
 save(High_vs_Low_topTable,
-	 Medium_vs_Low_topTable,
-	 High_vs_Medium_topTable,
-	 bonf_threshold,
+     Medium_vs_Low_topTable, 
+     High_vs_Medium_topTable,
+     bonf_threshold,
      file = file.path(results_folder, paste0("limma_results", label, ".R")))
 
 cat("Script completed. \n")
