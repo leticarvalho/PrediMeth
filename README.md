@@ -65,4 +65,33 @@ In this script, EWAS results will be annotated using missMethyl functions, to ac
 * Reactome
 * Alternative gene sets: MSigDB Hallmark, ImmuneSigDB, Wikipathways
 
+## 5. Construction and calculation of Methylation Risk Scores: *Stage2_MRSconstruction.R*
 
+### Description
+In this script, CpGs are selected to construct different Methylation Risk Scores (MRS), which will be later calculated for each sample from tha validation cohort.  
+
+### Input 
+From discovery cohort: 
+* Pheno data
+* Mvalues
+* Limma's topTables
+From validation cohort: 
+* Pheno data
+* Betavalues
+
+### Output
+* MRSs calculated for validation cohort
+
+## 6. Study of association between MRS and T2D: *Stage2_MRSandT2Dassociation.R*
+
+### Description
+In this script, we investigate if MRSs are associated with T2D in two different contexts. For prevalent T2D, we use a logistic regression and odds ratio. For incident T2D, we use Cox proportional hazards model and hazard ratio.   
+
+### Input 
+* Validation cohort (already preprocessed, with MRSs already calculated, as variables)
+
+### Output
+* Forest plot summarizing MRS and T2D associations
+* Summary table (both analyses)
+* Summary table of logistic regression
+* Summary table of Cox proportional hazards
