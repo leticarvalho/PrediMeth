@@ -17,7 +17,9 @@
 
 # OUTPUT -------------------------------------------------
 # 	Forest plot summarizing MRS and T2D associations
-#   file 2
+#   Summary table (both analyses)
+#   Summary table of logistic regression
+#   Summary table of Cox proportional hazards
 
 
 
