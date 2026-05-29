@@ -48,14 +48,16 @@ library(ggplot2)
 
 ## Input paths -------------------------------------------
 
-path_to_processed_data_stage1 <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/processed_data.R" # Rdata
-path_to_limma_results_continuous_stage_1 <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/ContinuousContrast/limma_results_continuous.R" # Rdata
-path_to_limma_results_3catoriginal_stage_1 <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/Original3CategoricalContrast/limma_results_model1_cat3original.R"  # Rdata
-path_to_processed_data_stage2 <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/processed_data_stage2.R"  # Rdata
+path_to_processed_data_stage1 <- "" # Rdata
+path_to_limma_results_continuous_stage_1 <- "" # Rdata
+path_to_limma_results_3catoriginal_stage_1 <- ""  # Rdata
+path_to_processed_data_stage2 <- ""  # Rdata
 
 ## Output paths ------------------------------------------
 
-results_folder <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/"
+predimeth_path <- ""
+results_dir <- file.path(predimeth_path, "results")
+results_folder <- file.path(results_dir, "ValidationCohort")
 
 ##########################################################
 

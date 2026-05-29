@@ -33,30 +33,31 @@ library(lumi)
 
 ## Input paths -------------------------------------------
 
-path_to_discovery_cohort <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/disc_pheno.R" # .Rdata
-path_to_EPIC2_annotation <- "/imppc/labs/dnalab/share/PrediMeth/0-data/EPICv2.annot.RData" # .Rdata
-path_to_valid_beta_values <- "/imppc/labs/dnalab/studentdnabank/Data/omics/methylation/cnio_ia4t2d/4.norm_pc_10_IA4T2D_beta.Robj" #.Robj
+path_to_discovery_cohort <- "" # .Rdata
+path_to_EPIC2_annotation <- "" # .Rdata
+path_to_valid_beta_values <- "" #.Robj
 
-path_to_valid_cell_counts <- "/imppc/labs/dnalab/share/data_storage/gcat_epic/analysis/final_normalization/IA4T2D_samples/cells_and_clocks/cell_counts.csv"
-path_to_metadata <- "/imppc/labs/dnalab/share/data_storage/IA4T2D_Methylation/IA4T2D_metadata.csv"
-path_to_metadata2 <- "/imppc/labs/dnalab/share/data_storage/gcat_epic/data/metadata/20250305_IA4T2D_sampleSheet.csv"
-path_to_t2d_diagnosis_final <- "/imppc/labs/dnalab/share/PrediMeth/0-data/ia4t2d_date_diagnosis_final.csv"
+path_to_valid_cell_counts <- "" # .csv
+path_to_metadata <- "" # .csv
+path_to_metadata2 <- "/" # .csv
+path_to_t2d_diagnosis_final <- "" # .csv
 
-path_to_EHR_labs <- "/imppc/labs/dnalab/share/PrediMeth/0-data/2026/AP_Laboratoris.csv"
-path_to_EHR_gluc <- "/imppc/labs/dnalab/share/PrediMeth/0-data/EHR_glucemia.csv"
-path_to_EHR_glycosilated <- "/imppc/labs/dnalab/share/PrediMeth/0-data/EHR_glicosilada.csv"
-path_to_EHR_BMI <- "/imppc/labs/dnalab/share/PrediMeth/0-data/2026/AP_IMC.csv"
-path_to_cci_valid <- "/imppc/labs/dnalab/studentdnabank/Data/EHR/charlson_elixhauser_comorbidity_index_2025.csv"
+path_to_EHR_labs <- "" # .csv
+path_to_EHR_gluc <- "" # .csv
+path_to_EHR_glycosilated <- "" # .csv
+path_to_EHR_BMI <- "" # .csv
+path_to_cci_valid <- "" # .csv
 
-data_path <- "/imppc/labs/dnalab/studentdnabank/Data/"
+data_path <- ""
 methylation_dir <- file.path(data_path, 'omics', 'methylation')
 questionary_dir <- file.path(data_path, 'questionnaire')
 
 ## Output paths ------------------------------------------
 
-predimeth_path <- "/imppc/labs/dnalab/share/PrediMeth"
+predimeth_path <- ""
 results_dir <- file.path(predimeth_path, "results")
-results_folder <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/"
+results_folder <- file.path(results_dir, "ValidationCohort")
+dir.create(results_folder)
 
 ##########################################################
 

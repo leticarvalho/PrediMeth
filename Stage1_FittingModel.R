@@ -54,12 +54,12 @@ library(RColorBrewer)
 
 ## Input paths -------------------------------------------
 
-path_to_EPIC2_annotation <- "/imppc/labs/dnalab/share/PrediMeth/0-data/EPICv2.annot.RData" # .Rdata
-path_to_processed_data_stage1 <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/processed_data.R" # 
+path_to_EPIC2_annotation <- "" # .Rdata
+path_to_processed_data_stage1 <- "" # .Rdata
 
 ## Output paths -------------------------------------------
 
-predimeth_path <- "/imppc/labs/dnalab/share/PrediMeth"
+predimeth_path <- ""
 results_dir <- file.path(predimeth_path, "results")
 results_folder <- file.path(results_dir, 'OfficialAnalysis')
 

@@ -64,11 +64,11 @@ cat("All packages loaded.\n")
 
 ## Input paths -------------------------------------------
 
-path_to_processed_data_stage1 <- "/imppc/labs/dnalab/share/PrediMeth/results/OfficialAnalysis/processed_data.R" # R.data
+path_to_processed_data_stage1 <- "" # R.data
 
 ## Output paths ------------------------------------------
 
-predimeth_path <- "/imppc/labs/dnalab/share/PrediMeth"
+predimeth_path <- ""
 results_dir <- file.path(predimeth_path, "results")
 results_folder <- file.path(results_dir, 'OfficialAnalysis', 'DMR' )
 dir.create(results_folder)

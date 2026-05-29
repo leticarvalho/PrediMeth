@@ -36,16 +36,16 @@ library(lumi)
 
 ## Input paths -------------------------------------------
 
-methylation_dir <- "/imppc/labs/dnalab/studentdnabank/Data/omics/methylation/ijc/"
-questionary_dir <- "/imppc/labs/dnalab/studentdnabank/Data/questionnaire/"
-path_to_normalized_betas <- "/imppc/labs/dnalab/studentdnabank/Data/omics/methylation/ijc/4.norm_pc_10_IJC_beta.Robj" # .Robj
-path_to_EPIC2_annotation <- "/imppc/labs/dnalab/share/PrediMeth/0-data/EPICv2.annot.RData" # .Rdata
-path_to_disc_cell_counts <- "/imppc/labs/dnalab/studentdnabank/Data/omics/methylation/ijc/cell_and_clocks/cell_counts.csv" # csv
-path_to_CCI <- "/imppc/labs/dnalab/studentdnabank/Data/EHR/charlson_elixhauser_comorbidity_index_2025.csv" # csv of Charlson index
+methylation_dir <- ""
+questionary_dir <- ""
+path_to_normalized_betas <- "" # .Robj
+path_to_EPIC2_annotation <- "" # .Rdata
+path_to_disc_cell_counts <- "" # csv
+path_to_CCI <- "" # csv of Charlson index
 
 ## Output paths ------------------------------------------
 
-predimeth_path <- "/imppc/labs/dnalab/share/PrediMeth"
+predimeth_path <- "" # project folder
 results_dir <- file.path(predimeth_path, "results")
 results_folder <- file.path(results_dir, 'OfficialAnalysis') 
 dir.create(results_folder)
