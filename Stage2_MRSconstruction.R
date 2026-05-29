@@ -33,6 +33,7 @@
 
 # OUTPUT -------------------------------------------------
 # 	MRSs calculated for validation cohort (csv)
+#   MRS names and weights (.R data)
 
 
 ##########################################################
