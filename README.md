@@ -26,9 +26,9 @@ In this script, the processed data is used to fit a linear model to each CpG, us
 **Model**: Mvalues ~ MedDiet adherence + age + sex + BMI smoking + batch + cells
 Distinct exposure variables to represent MedDiet adherence: 
 * Continuous = predimed_score (0-14)
-* Binary = predimed_high (high >= 9) - 553 (no) vs 421 (yes) 
-* 3-factor categorical = predimed_cat (low <=4, high >=9): 38 (low) vs 515 (medium) vs 421 (high)
-* Extreme = predimed_extreme (Low_Q1 <= 6, Mid_Q23 = 7-9, High_Q4 >= 10): 235 (Low_Q1) vs 262 (High_Q4)
+* Binary = predimed_high (high >= 9)  
+* 3-factor categorical = predimed_cat (low <=4, medium 5-8, high >=9)
+* Extreme = predimed_extreme (Low_Q1 <= 6, Mid_Q23 = 7-9, High_Q4 >= 10)
 For each model, a topTable will be generated, including EPIC v2 annotation and calculated absolute delta beta (ADB). Top hits will be FDR-adjusted.  
 
 ### Input 
