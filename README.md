@@ -6,7 +6,7 @@ Git repository with scripts used to develop this project.
 ## 1. Data preprocessing (Test cohort): *Stage1_DataPreprocessing.R*
 
 ### Description
-In this script, the data from the discovery cohort is processed and prepared for the future EWAS. It involves phenotype and methylation data. The data from discovery cohort comes from IJC. 
+In this script, the data from the discovery cohort is processed and prepared for the future EWAS. It involves phenotype and methylation data.  
 
 ### Input
 * Phenotype data (diet adherence + covariables)
@@ -22,65 +22,84 @@ In this script, the data from the discovery cohort is processed and prepared for
 ## 2. EWAS of Mediterranean diet: *Stage1_FittingModel.R*
 
 ### Description
-In this script, the processed data is used to fit the best linear model (selected after sensitivity analyses) to each CpG, using limma R package. For this model, a topTable will be generated, including EPIC v2 annotation and calculated absolute delta beta (ADB). 
-**Selected model**: Mvalues ~ diet + age + sex + smoking + BMI + cell counts
-*Obs. diet may be binary (predimed_high) or multifactor (predimed_cat); some lines are commented depending on this.*
+In this script, the processed data is used to fit a linear model to each CpG, using limma R package. 
+**Model**: Mvalues ~ MedDiet adherence + age + sex + BMI smoking + batch + cells
+Distinct exposure variables to represent MedDiet adherence: 
+* Continuous = predimed_score (0-14)
+* Binary = predimed_high (high >= 9) - 553 (no) vs 421 (yes) 
+* 3-factor categorical = predimed_cat (low <=4, high >=9): 38 (low) vs 515 (medium) vs 421 (high)
+* Extreme = predimed_extreme (Low_Q1 <= 6, Mid_Q23 = 7-9, High_Q4 >= 10): 235 (Low_Q1) vs 262 (High_Q4)
+For each model, a topTable will be generated, including EPIC v2 annotation and calculated absolute delta beta (ADB). Top hits will be FDR-adjusted.  
 
 ### Input 
 * Data frame of phenotype (rows: samples, columns: variables)
-* Matrix of beta values (rows: probe IDs, columns: samples)
-* Matrix of M-values (rows: probe IDs, columns: samples)
+* Matrix of beta values (rows: probe names, columns: samples)
+* Matrix of M-values (rows: probe names, columns: samples)
 
 ### Output
-* Results table (topTable + annotation + ADB)
-* Bonferroni's threshold
+* Lambdas comparison of all contrasts
+For each contrast, a folder with: 
+* Plot with beta values distribution (bimodal) 
+* Results tables (topTable + annotation + ADB) (.Rdata)
+* CpGs vectors to enrichment (.Rdata)
+* Tables with fdr hits (.csv)
+* Volcano plot
+* Manhattan plot
+* Genomic Categories barplot
 
-## 3. Results visualization: *Stage1_VisualizingEWASResults.R*
+## 3. DMR Analysis: *Stage1_AnalysisDMR.R*
 
 ### Description
-In this script, EWAS results are visualized by plots, regarding different aspects. R packages like *ggplot2*, *qqman* and *EnhancedVolcano* will be used. 
+In this script, EWAS results will be investigated for existence of Different Methylated Regions (DMRs), using DMRcate R package.
 
 ### Input 
-* EWAS results (topTable)
+Processed data (from discovery cohort): 
+* phenotype data frame,
+* beta values matrix
+* m-values matrix
 
 ### Output 
-* FDR-significant topTable subset
-* CpGs in vectors (to use in enrichment)
-* Volcano Plot
-* Manhattan Plot
-* QQplot (genomic inflation analysis)
-* Genomic Categories Bar Plot
+For each contrast that has DMPs (DMRcate):
+* DMPs 
+* DMRs 
 
-## 4. Annotation of top hits: *Stage1_AnnotatingEWASTopHits.R*
+## 4. Data Preprocessing (Validation cohort): *Stage2_ValidationDataPreprocessing.R*
 
 ### Description
-In this script, EWAS results will be annotated using missMethyl functions, to account for multi-probe bias, using some annotation databases: Gene Ontology (GO), Kyoto Encyclopedia of Genes and Genomes (KEGG), Reactome, and alternative gene sets. If not FDR-significant, results will be ranked by raw p-value, and showed by a dotplot or a barchart. 
+In this script, phenotype and methylation data from the validation cohort are preprocessed. 
 
 ### Input 
-* EWAS results (CpG vectors)
+* Phenotype data (diet adherence + covariables)
+* Blood cells counts
 
 ### Output
-* Gene Ontology (GO)
-* Kyoto Encyclopedia of Genes and Genomes (KEGG)
-* Reactome
-* Alternative gene sets: MSigDB Hallmark, ImmuneSigDB, Wikipathways
+* Data frame of phenotype (rows: samples, columns: variables)
+* Matrix of beta values (rows: probe names, columns: samples)
+* Matrix of M-values (rows: probe names, columns: samples)
 
 ## 5. Construction and calculation of Methylation Risk Scores: *Stage2_MRSconstruction.R*
 
 ### Description
-In this script, CpGs are selected to construct different Methylation Risk Scores (MRS), which will be later calculated for each sample from tha validation cohort.  
+In this script, Methylation Risk Score (MRS) is constructed with different CpG selection strategies, and calculated for each sample from the validation cohort. 
+CpG selection strategies:
+1. MRS constructed with FDR hits from standard contrasts (HL + ML) using HL delta beta as weight (from discovery EWAS)
+2. MRS constructed with top CpGs from continuous contrast, with pvalue < 1e-5, using Continuous delta beta per unit as weight (from discovery EWAS)
+3. MRS constructed with top CpGs from continuous contrast, with pvalue < 1e-4, using Continuous delta beta per unit as weight (from discovery EWAS)
+4. MRS constructed with an elastic net, with all CpGs, with alfa = 0.5, lambda min, 10-fold cv, residualizing for covariates  
 
 ### Input 
 From discovery cohort: 
-* Pheno data
-* Mvalues
-* Limma's topTables
-From validation cohort: 
+* Pheno table
+* Betavalues
+* Limma's topTable (continuous model)
+* Limma's topTable (High vs low - 3 categories model)
+From validation cohort:
 * Pheno data
 * Betavalues
 
 ### Output
-* MRSs calculated for validation cohort
+* MRSs calculated for validation cohort (csv)
+* MRSs names and weights (.R data)
 
 ## 6. Study of association between MRS and T2D: *Stage2_MRSandT2Dassociation.R*
 
