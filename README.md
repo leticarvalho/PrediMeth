@@ -114,3 +114,17 @@ In this script, we investigate if MRSs are associated with T2D in two different 
 * Summary table (both analyses)
 * Summary table of logistic regression
 * Summary table of Cox proportional hazards
+
+## 7. Functional annotation of CpGs: *Stage3_AnnotatingEWASTopHits.R*
+
+### Description
+In this script, EWAS results will be annotated using *missMethyl* functions, to account for multi-probe bias, using some annotation databases: Gene Ontology (GO), Kyoto Encyclopedia of Genes and Genomes (KEGG), Reactome and Wikipathways. If not FDR-significant, results will be ranked by raw p-value, and showed by a dotplot or a barchart.  
+
+### Input 
+* EWAS results (topTable)
+
+### Output
+* ORA with Gene Ontology (GO) + dotplot
+* ORA with Kyoto Encyclopedia of Genes and Genomes (KEGG) + barplot
+* ORA with Reactome + dotplot
+* ORA with Wikipathways + dotplot
