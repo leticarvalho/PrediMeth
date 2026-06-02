@@ -128,3 +128,44 @@ In this script, EWAS results will be annotated using *missMethyl* functions, to 
 * ORA with Kyoto Encyclopedia of Genes and Genomes (KEGG) + barplot
 * ORA with Reactome + dotplot
 * ORA with Wikipathways + dotplot
+
+## 8. Splines Exploratory Analysis: *Extra_Splines.R*
+
+### Description
+In this script, an exploratory analysis of data from the discovery cohort is carried, using natural splines (df = 3), in order to try to capture non-linearity in a possible association of predimed score and differential methylated CpGs.
+
+### Input 
+* Annotation (EPIC v2)
+* Processed data from discovery cohort (Betas, Mvalues, pheno)
+* TopTable from continuos contrast
+* TopTable from HL contrast
+
+### Output
+* Table with splines hits (possibly curved association)
+* Plots of FDR significant curved CpGs, of predimed score in x-axis and predicted betas in y-axis (adjusted to mean covariates)
+
+## 9. Methylation clocks (Discovery cohort): *Extra_MethylationClocks_Discovery.R*
+
+### Description
+In this script, we investigate if there is association between methylation clocks and adherence to MedDiet assessed by predimed_score as continuous variable, in the discovery cohort. We also stratify the analysis by incident CVD.  
+
+### Input 
+* Discovery cohort phenotype data (diet adherence + covariables)
+* Calculated methylation clocks for discovery cohort
+
+### Output
+* Forest plot
+* Forest plot (stratified incident CVD)
+
+## 10. Methylation clocks (Validation cohort): *Extra_MethylationClocks_Validation.R*
+
+### Description
+In this script, we investigate if there is association between methylation clocks and adherence to MedDiet assessed by predimed_score as continuous variable, in the validation cohort. We also stratify the analysis by T2D status.  
+
+### Input 
+* Validation cohort phenotype data (diet adherence + covariables)
+* Calculated methylation clocks for validation cohort
+
+### Output
+* Forest plot
+* Forest plot (stratified T2D status)
