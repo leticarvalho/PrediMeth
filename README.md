@@ -16,8 +16,8 @@ In this script, the data from the discovery cohort is processed and prepared for
 
 ### Output 
 * Data frame of phenotype (rows: samples, columns: variables)
-* Matrix of beta values (rows: probe IDs, columns: samples)
-* Matrix of M-values (rows: probe IDs, columns: samples)
+* Matrix of beta values (rows: probe names, columns: samples)
+* Matrix of M-values (rows: probe names, columns: samples)
 
 ## 2. EWAS of Mediterranean diet: *Stage1_FittingModel.R*
 
@@ -61,7 +61,8 @@ Processed data (from discovery cohort):
 ### Output 
 For each contrast that has DMPs (DMRcate):
 * DMPs 
-* DMRs 
+* DMRs
+* DMR plots
 
 ## 4. Data Preprocessing (Validation cohort): *Stage2_ValidationDataPreprocessing.R*
 
@@ -70,6 +71,8 @@ In this script, phenotype and methylation data from the validation cohort are pr
 
 ### Input 
 * Phenotype data (diet adherence + covariables)
+* Methylation data (beta values matrix already normalized)
+* Annotation from EPIC version 2
 * Blood cells counts
 
 ### Output
@@ -81,10 +84,10 @@ In this script, phenotype and methylation data from the validation cohort are pr
 
 ### Description
 In this script, Methylation Risk Score (MRS) is constructed with different CpG selection strategies, and calculated for each sample from the validation cohort. 
-CpG selection strategies:
-1. MRS constructed with FDR hits from standard contrasts (HL + ML) using HL delta beta as weight (from discovery EWAS)
-2. MRS constructed with top CpGs from continuous contrast, with pvalue < 1e-5, using Continuous delta beta per unit as weight (from discovery EWAS)
-3. MRS constructed with top CpGs from continuous contrast, with pvalue < 1e-4, using Continuous delta beta per unit as weight (from discovery EWAS)
+CpG selection strategies (applied to discovery cohort):
+1. MRS constructed with FDR hits from standard contrasts (HL + ML) using HL delta beta as weight 
+2. MRS constructed with top CpGs from continuous contrast, with pvalue < 1e-5, using Continuous delta beta per unit as weight
+3. MRS constructed with top CpGs from continuous contrast, with pvalue < 1e-4, using Continuous delta beta per unit as weight 
 4. MRS constructed with an elastic net, with all CpGs, with alfa = 0.5, lambda min, 10-fold cv, residualizing for covariates  
 
 ### Input 
@@ -92,7 +95,7 @@ From discovery cohort:
 * Pheno table
 * Betavalues
 * Limma's topTable (continuous model)
-* Limma's topTable (High vs low - 3 categories model)
+* Limma's topTables (categorical model)
 From validation cohort:
 * Pheno data
 * Betavalues
