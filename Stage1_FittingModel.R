@@ -112,41 +112,6 @@ cat("Probes with any NA:", sum(rows_with_NA), "/", nrow(Mvalues), "\n")
 ## Checking pheno structure
 str(pheno)
 
-## Checking distribution of beta values in discovery cohort
-
-cases <- pheno$sample_id[pheno$predimed_high == "yes"]
-controls <- pheno$sample_id[pheno$predimed_high == "no"]
-beta_matrix_noID <- beta_matrix
-colnames(beta_matrix_noID)[colnames(beta_matrix_noID) %in% cases] <- "CASE"
-colnames(beta_matrix_noID)[colnames(beta_matrix_noID) %in% controls] <- "CONTROL"
-case_cols <- which(colnames(beta_matrix_noID) == "CASE")
-control_cols <- which(colnames(beta_matrix_noID) == "CONTROL")
-
-png(filename=file.path(results_folder, "methylation_profile_discovery_cohort.png"), width=1600, height=950)
-
-plot(density(beta_matrix_noID[, case_cols[1]]),
-     col="yellowgreen",
-     xlab="Beta value",
-     ylim=c(0,6),
-     main="PrediMeth samples",
-     lwd=2)
-
-invisible(sapply(case_cols[-1], function(x)
-  lines(density(beta_matrix_noID[,x]), col="yellowgreen", lwd=1)
-))
-
-invisible(sapply(control_cols, function(x)
-  lines(density(beta_matrix_noID[,x]), col="cornflowerblue", lwd=1)
-))
-
-legend("topleft",
-       c("CASES", "CONTROLS"),
-       text.col=c("yellowgreen", "cornflowerblue"))
-
-dev.off()
-
-rm(beta_matrix_noID)
-
 ##########################################################
 
 cat("Data checked. \n\nPreparing functions. \n")
